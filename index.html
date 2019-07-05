@@ -1,0 +1,255 @@
+<html>
+<head>
+    <script src="https://threejsfundamentals.org/threejs/resources/threejs/r105/three.min.js"></script>
+</head>
+<body>
+<canvas id="c" width="800" height="800"></canvas>
+<script>
+    var rooms = [];
+    var data = [
+        {
+            name: "Aphrodite",
+            shape: [[552, 395], [608, 395], [608, 445], [552, 445]],
+            floor: 19
+        },
+        {
+            name: "Apollo",
+            shape: [[611, 395], [659, 395], [659, 425], [639, 445], [611, 445]],
+            floor: 19
+        },
+        {
+            name: "Ares",
+            shape: [[695, 395], [743, 395], [743, 445], [715, 445], [695, 425]],
+            floor: 19
+        },
+        {
+            name: "Artemis",
+            shape: [[747, 337], [820, 337], [820, 445], [747, 445]],
+            floor: 19
+        },
+        {
+            name: "Eros",
+            shape: [[695, 538], [715, 518], [743, 518], [743, 542], [767, 542], [767, 567], [695, 567]],
+            floor: 19
+        },
+        {
+            name: "Hades",
+            shape: [[695, 571], [769, 571], [769, 669], [695, 669]],
+            floor: 19
+        },
+        {
+            name: "Hebe",
+            shape: [[695, 672], [743, 672], [743, 696], [769, 696], [769, 723], [709, 723], [695, 709]],
+            floor: 19
+        },
+        {
+            name: "Helios",
+            shape: [[617, 672], [659, 672], [659, 710], [646, 723], [617, 723]],
+            floor: 19
+        },
+        {
+            name: "Hera",
+            shape: [[552, 672], [613, 672], [613, 723], [552, 723]],
+            floor: 19
+        },
+        {
+            name: "Heracles",
+            shape: [[484, 678], [549, 678], [549, 723], [484, 723]],
+            floor: 19
+        },
+        {
+            name: "Hermes",
+            shape: [[438, 678], [480, 678], [480, 723], [451, 723], [438, 710]],
+            floor: 19
+        },
+        {
+            name: "Iris",
+            shape: [[552, 231], [659, 231], [659, 392], [552, 392]],
+            floor: 19
+        },
+        {
+            name: "Morpheus",
+            shape: [[695, 240], [743, 240], [743, 289], [695, 289]],
+            floor: 19
+        },
+        {
+            name: "Metis",
+            shape: [[695, 337], [743, 337], [743, 392], [695, 392]],
+            floor: 19
+        },
+        {
+            name: "Nike",
+            shape: [[495, 231], [549, 231], [549, 275], [495, 275]],
+            floor: 19
+        },
+        {
+            name: "Poseidon",
+            shape: [[438, 231], [491, 231], [491, 275], [438, 275]],
+            floor: 19
+        },
+        {
+            name: "Selene",
+            shape: [[705, 759], [769, 759], [769, 877], [729, 877], [729, 851], [705, 851]],
+            floor: 19
+        },
+        {
+            name: "Uranus",
+            shape: [[445, 759], [702, 759], [702, 877], [525, 877], [525, 851], [498, 851], [498, 877], [445, 877]],
+            floor: 19
+        },
+
+        {
+            name: "Athena",
+            shape: [[683, 156], [743, 156], [743, 168], [769, 168], [769, 265], [683, 265]],
+            floor: 20
+        },
+        {
+            name: "Phoenix",
+            shape: [[683, 269], [743, 269], [743, 318], [683, 318]],
+            floor: 20
+        },
+        {
+            name: "Pandora",
+            shape: [[552, 279], [608, 279], [608, 323], [552, 323]],
+            floor: 20
+        },
+        {
+            name: "Demeter",
+            shape: [[552, 327], [608, 327], [608, 372], [552, 372]],
+            floor: 20
+        },
+        {
+            name: "Hermione",
+            shape: [[552, 375], [608, 375], [608, 412], [552, 412]],
+            floor: 20
+        },
+        {
+            name: "Roma",
+            shape: [[552, 415], [608, 415], [608, 451], [552, 451]],
+            floor: 20
+        },
+        {
+            name: "Odysseus",
+            shape: [[646, 542], [646, 619], [769, 619], [769, 542]],
+            floor: 20
+        },
+        {
+            name: "Phoebe",
+            shape: [[646, 622], [705, 622], [705, 683], [646, 683]],
+            floor: 20
+        },
+        {
+            name: "Orion",
+            shape: [[709, 622], [769, 622], [769, 712], [709, 712]],
+            floor: 20
+        },
+        {
+            name: "Zeus",
+            shape: [[671, 716], [769, 716], [769, 781], [671, 781]],
+            floor: 20
+        }
+    ];
+</script>
+<script>
+    'use strict';
+
+    /* global THREE */
+    var camera, scene, renderer;
+
+    function setRoom(name, path) {
+        var shape = new THREE.Shape();
+        shape.moveTo(
+            path[0][0],
+            -path[0][1]
+        );
+
+        for (var i = 1; i < path.length; i++) {
+            shape.lineTo(
+                path[i][0],
+                -path[i][1]
+            );
+        }
+
+        shape.lineTo(
+            path[0][0],
+            -path[0][1]
+        );
+
+        var roomGeo = new THREE.ExtrudeGeometry(shape, {amount: 0.2, bevelEnabled: false});
+        var material = new THREE.MeshBasicMaterial({color: 0x999999});  // grey
+        var room = new THREE.Mesh(roomGeo, material);
+        room.callback = objectClickHandler;
+        room.name = name;
+        return room;
+    }
+
+    function init() {
+        const canvas = document.querySelector('#c');
+        renderer = new THREE.WebGLRenderer({canvas});
+
+        const fov = 75;
+        const aspect = 1;  // the canvas default
+        const near = 0.1;
+        const far = 2000;
+        camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.rotation.set(0, 0, Math.PI / 2);
+        camera.position.z = 700;
+        camera.position.x = 500;
+        camera.position.y = -500;
+
+        scene = new THREE.Scene();
+
+        for (var i = 0; i < data.length; i++) {
+            if(data[i].floor == 20) {
+                continue;
+            }
+            var room = setRoom(data[i].name, data[i].shape);
+            rooms.push(room);
+            scene.add(room);
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    function objectClickHandler() {
+        console.log("CLICKED " + this.name + " !");
+        this.material.color.setHex(0xff0000ff);
+        renderer.render(scene, camera);
+    }
+
+    function highlightRoom(name) {
+        rooms.forEach(function (entry) {
+            if (entry.name == name) {
+                entry.material.color.setHex(0xff990000);
+            } else {
+                entry.material.color.setHex(0xff999999);
+            }
+        });
+        renderer.render(scene, camera);
+    }
+
+    window.onload = function () {
+        init();
+
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+
+        function onDocumentMouseDown(event) {
+            event.preventDefault();
+
+            mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+            mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            var intersects = raycaster.intersectObjects(rooms);
+
+            if (intersects.length > 0) {
+                intersects[0].object.callback();
+            }
+        };
+        document.addEventListener('mousedown', onDocumentMouseDown, false);
+    }
+</script>
+</body>
+</html>
