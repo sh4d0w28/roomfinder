@@ -8,33 +8,74 @@
     html, body {
         width: 100%;
         height: 100%;
+        font-size: 20px;
     }
 
     canvas {
         display: block;
-    }
-
-    canvas {
         background: #eee;
     }
 
-    div {
+    #div1 {
         position: absolute;
         top: 20px;
         left: 20px;
-        width: 200px;
-    }</style>
+        width: 45%;
+    }
+
+    #div2 {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 45%;
+        text-align: right;
+    }
+
+    #txtRoom, button {
+        font-size:24px;
+    }
+
+    </style>
     <script src="https://threejsfundamentals.org/threejs/resources/threejs/r105/three.min.js"></script>
 </head>
 <body>
-<div>
+<div id="div1">
     <input type="text" id="txtRoom" list="roomList" onchange="lookAtName()"/>
     <button id="btnReset" onclick="resetSearch()">Reset</button>
     <datalist id="roomList">
         <option value="Aphrodite"/>
         <option value="Apollo"/>
         <option value="Ares"/>
+        <option value="Artemis"/>
+        <option value="Eros"/>
+        <option value="Hades"/>
+        <option value="Hebe"/>
+        <option value="Helios"/>
+        <option value="Hera"/>
+        <option value="Heracles"/>
+        <option value="Hermes"/>
+        <option value="Iris"/>
+        <option value="Morpheus"/>
+        <option value="Metis"/>
+        <option value="Nike"/>
+        <option value="Poseidon"/>
+        <option value="Selene"/>
+        <option value="Uranus"/>
+        <option value="Athena"/>
+        <option value="Phoenix"/>
+        <option value="Pandora"/>
+        <option value="Demeter"/>
+        <option value="Hermione"/>
+        <option value="Roma"/>
+        <option value="Odysseus"/>
+        <option value="Phoebe"/>
+        <option value="Orion"/>
+        <option value="Zeus"/>
     </datalist>
+</div>
+<div id="div2">
+    <button id="btn19" onclick="go19Floor()">19</button>
+    <button id="btn20" onclick="go20Floor()">20</button>
 </div>
 <canvas id="canvas"></canvas>
 <script>
@@ -42,6 +83,7 @@
     /* global THREE */
     var camera, scene, renderer;
     var rooms = [];
+    var floor = 20;
 
     function initCamera() {
         camera = new THREE.PerspectiveCamera(75, 1, 0.1, 2000);
@@ -56,9 +98,11 @@
         var axesHelper = new THREE.AxesHelper(5);
         scene.add(axesHelper);
         data.forEach(function (room) {
-            var roomObj = createRoom(room);
-            rooms.push(roomObj);
-            scene.add(roomObj);
+            if (room.floor == floor) {
+                var roomObj = createRoom(room);
+                rooms.push(roomObj);
+                scene.add(roomObj);
+            }
         });
     }
 
@@ -107,6 +151,18 @@
                 return;
             }
         }
+    }
+
+    function go19Floor() {
+        floor = 19;
+        initScene();
+        refresh();
+    }
+
+    function go20Floor() {
+        floor = 20;
+        initScene();
+        refresh();
     }
 
     function resetSearch() {
