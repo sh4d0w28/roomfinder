@@ -33,10 +33,12 @@
 
     #txtRoom, button {
         font-size:24px;
+        height:150px;
     }
 
     #btn19, #btn20 {
         width:40%;
+        height:150px;
     }
 
     </style>
@@ -142,7 +144,6 @@
     }
 
     function selectRoom() {
-        this.material.color.setHex(0xff0000ff);
         lookAtRoom(this.data);
         refresh();
     }
@@ -195,6 +196,15 @@
         } else {
             camera.lookAt(roomData.shape[0][0], -roomData.shape[0][1], 0);
         }
+
+        for (var i = 0; i< rooms.length; i++) {
+            if (rooms[i].data.name == roomData.name) {
+                rooms[i].material.color.setHex(0xff990000);
+            } else {
+                rooms[i].material.color.setHex(0xff999999);
+            }
+        }
+
         refresh();
     }
 
