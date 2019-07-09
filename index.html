@@ -1,17 +1,137 @@
 <html>
 <head>
+    <style>* {
+        margin: 0;
+        padding: 0;
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+    }
+
+    canvas {
+        display: block;
+    }
+
+    canvas {
+        background: #eee;
+    }
+
+    div {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 200px;
+    }</style>
     <script src="https://threejsfundamentals.org/threejs/resources/threejs/r105/three.min.js"></script>
-    <style>
-        * { margin:0; padding:0; } /* to remove the top and left whitespace */
-
-html, body { width:100%; height:100%; } /* just to be sure these are full screen*/
-
-        canvas { display:block; } /* To remove the scrollbars */</style>
 </head>
 <body>
-<canvas id="c" width="800" height="800"></canvas>
+<div>
+    <input type="text" id="txtRoom" list="roomList" onchange="lookAtName()"/>
+    <button id="btnReset" onclick="resetSearch()">Reset</button>
+    <datalist id="roomList">
+        <option value="Aphrodite"/>
+        <option value="Apollo"/>
+        <option value="Ares"/>
+    </datalist>
+</div>
+<canvas id="canvas"></canvas>
 <script>
+    'use strict';
+    /* global THREE */
+    var camera, scene, renderer;
     var rooms = [];
+
+    function initCamera() {
+        camera = new THREE.PerspectiveCamera(75, 1, 0.1, 2000);
+        camera.rotation.set(0, 0, Math.PI / 2);
+        camera.position.z = 600;
+        camera.position.x = 500;
+        camera.position.y = -500;
+    }
+
+    function initScene() {
+        scene = new THREE.Scene();
+        var axesHelper = new THREE.AxesHelper(5);
+        scene.add(axesHelper);
+        data.forEach(function (room) {
+            var roomObj = createRoom(room);
+            rooms.push(roomObj);
+            scene.add(roomObj);
+        });
+    }
+
+    function refresh() {
+        renderer.render(scene, camera);
+    }
+
+    function createRoom(roomData) {
+        var shape = new THREE.Shape();
+        shape.moveTo(
+            roomData.shape[0][0],
+            -roomData.shape[0][1]
+        );
+
+        for (var i = 1; i < roomData.shape.length; i++) {
+            shape.lineTo(
+                roomData.shape[i][0],
+                -roomData.shape[i][1]
+            );
+        }
+
+        shape.lineTo(
+            roomData.shape[0][0],
+            -roomData.shape[0][1]
+        );
+
+        var roomGeo = new THREE.ExtrudeGeometry(shape, {amount: 20, bevelEnabled: false});
+        var material = new THREE.MeshBasicMaterial({color: 0x999999});  // grey
+        var room = new THREE.Mesh(roomGeo, material);
+        room.callback = selectRoom;
+        room.data = roomData;
+        return room;
+    }
+
+    function selectRoom() {
+        this.material.color.setHex(0xff0000ff);
+        lookAtRoom(this.data);
+        refresh();
+    }
+
+    function lookAtName() {
+        var name = document.getElementById("txtRoom").value
+        for (var i = 0; i < rooms.length; i++) {
+            if (rooms[i].data.name == name) {
+                lookAtRoom(rooms[i].data);
+                return;
+            }
+        }
+    }
+
+    function resetSearch() {
+        document.getElementById("txtRoom").value = '';
+        initCamera();
+        initScene();
+        renderer.render(scene, camera);
+    }
+
+    function lookAtRoom(roomData) {
+        camera.position.set(1000, -500, 300);
+        camera.up = new THREE.Vector3(0, 0, 1);
+        if (roomData.lookFrom != null) {
+            camera.position.x = roomData.lookFrom[0];
+            camera.position.y = -roomData.lookFrom[1];
+            camera.position.z = roomData.lookFrom[2];
+        }
+        if (roomData.lookAt != null) {
+            camera.lookAt(roomData.lookAt[0], -roomData.lookAt[1], 0);
+        } else {
+            camera.lookAt(roomData.shape[0][0], -roomData.shape[0][1], 0);
+        }
+        refresh();
+    }
+
     var data = [
         {
             name: "Aphrodite",
@@ -155,92 +275,20 @@ html, body { width:100%; height:100%; } /* just to be sure these are full screen
             floor: 20
         }
     ];
+
 </script>
 <script>
-    'use strict';
+    (function () {
 
-    /* global THREE */
-    var camera, scene, renderer;
+        var canvas = document.getElementById('canvas');
+        // resize the canvas to fill browser window dynamically
+        window.addEventListener('resize', resizeCanvas, false);
+        window.addEventListener('load', init, false);
+        window.addEventListener('mousedown', clickRoom, false);
 
-    function setRoom(name, path) {
-        var shape = new THREE.Shape();
-        shape.moveTo(
-            path[0][0],
-            -path[0][1]
-        );
-
-        for (var i = 1; i < path.length; i++) {
-            shape.lineTo(
-                path[i][0],
-                -path[i][1]
-            );
-        }
-
-        shape.lineTo(
-            path[0][0],
-            -path[0][1]
-        );
-
-        var roomGeo = new THREE.ExtrudeGeometry(shape, {amount: 0.2, bevelEnabled: false});
-        var material = new THREE.MeshBasicMaterial({color: 0x999999});  // grey
-        var room = new THREE.Mesh(roomGeo, material);
-        room.callback = objectClickHandler;
-        room.name = name;
-        return room;
-    }
-
-    function init() {
-        const canvas = document.querySelector('#c');
-        renderer = new THREE.WebGLRenderer({canvas});
-
-        const fov = 75;
-        const aspect = 1;  // the canvas default
-        const near = 0.1;
-        const far = 2000;
-        camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        camera.rotation.set(0, 0, Math.PI / 2);
-        camera.position.z = 700;
-        camera.position.x = 500;
-        camera.position.y = -500;
-
-        scene = new THREE.Scene();
-
-        for (var i = 0; i < data.length; i++) {
-            if(data[i].floor == 20) {
-                continue;
-            }
-            var room = setRoom(data[i].name, data[i].shape);
-            rooms.push(room);
-            scene.add(room);
-        }
-
-        renderer.render(scene, camera);
-    }
-
-    function objectClickHandler() {
-        console.log("CLICKED " + this.name + " !");
-        this.material.color.setHex(0xff0000ff);
-        renderer.render(scene, camera);
-    }
-
-    function highlightRoom(name) {
-        rooms.forEach(function (entry) {
-            if (entry.name == name) {
-                entry.material.color.setHex(0xff990000);
-            } else {
-                entry.material.color.setHex(0xff999999);
-            }
-        });
-        renderer.render(scene, camera);
-    }
-
-    window.onload = function () {
-        init();
-
-        var raycaster = new THREE.Raycaster();
-        var mouse = new THREE.Vector2();
-
-        function onDocumentMouseDown(event) {
+        function clickRoom(event) {
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2();
             event.preventDefault();
 
             mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
@@ -253,9 +301,23 @@ html, body { width:100%; height:100%; } /* just to be sure these are full screen
             if (intersects.length > 0) {
                 intersects[0].object.callback();
             }
-        };
-        document.addEventListener('mousedown', onDocumentMouseDown, false);
-    }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initScene();
+        }
+
+        resizeCanvas();
+
+        function init() {
+            renderer = new THREE.WebGLRenderer({canvas});
+            initCamera();
+            initScene();
+            renderer.render(scene, camera);
+        }
+    })();
 </script>
 </body>
 </html>
