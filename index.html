@@ -10,16 +10,18 @@
 </head>
 <body>
 <div style="position:absolute;top:0px;">
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" style="display: block;"></canvas>
 </div>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-12"><h1 style="color:white;">Lzd Room Finder</h1></div>
+        <div class="col-12">
+            <h1 style="color:white;">Lzd Room Finder v0.1</h1>
+        </div>
     </div>
     <div class="row">
         <div class="col-9">
-            <select class="form-control" id="slctRoom" onchange="lookAtName()">
-                <option value="">--select room--</option>
+            <select autofocus="autofocus" class="form-control" id="slctRoom" onchange="lookAtName()">
+                <option value="">--select room (sorted a-z) --</option>
                 <option value="Aphrodite">Aphrodite - 19F</option>
                 <option value="Apollo">Apollo - 19F</option>
                 <option value="Ares">Ares - 19F</option>
@@ -57,7 +59,7 @@
     <br/>
     <div class="row">
         <div class="col">
-            <h2 style="color:white;" id="floorSelect">Floor: 20</h2>
+            <h2 style="color:white;" id="floorSelect">Floor: 20</h2><h4 id="reception" style="color:white">(green-olympic sign)</h4>
         </div>
         <div class="col">
             <button id="btn19" class="btn btn-info" onclick="goFloor(19)">19</button>
@@ -75,10 +77,10 @@
 
     function initCamera() {
         camera = new THREE.PerspectiveCamera(75, 1, 0.1, 2000);
-        camera.rotation.set(0, 0, Math.PI / 2);
-        camera.position.z = 600;
-        camera.position.x = 500;
-        camera.position.y = -500;
+        camera.rotation.set(0, Math.PI/8, Math.PI / 2);
+        camera.position.z = 550;
+        camera.position.x = 800;
+        camera.position.y = -470;
     }
 
     function initScene() {
@@ -92,6 +94,8 @@
             }
         });
         addReception();
+        addLifts();
+        addWalls();
     }
 
     function refresh() {
@@ -114,6 +118,54 @@
         }
     }
 
+    function addLifts() {
+        var shape = new THREE.Shape();
+        shape.moveTo(
+            lifts[0][0],
+            -lifts[0][1]
+        );
+
+        for (var i = 1; i < lifts.length; i++) {
+            shape.lineTo(
+                lifts[i][0],
+                -lifts[i][1]
+            );
+        }
+
+        shape.lineTo(
+            lifts[0][0],
+            -lifts[0][1]
+        );
+        var liftGeo = new THREE.ExtrudeGeometry(shape, {depth: 10, bevelEnabled: false});
+        var material = new THREE.MeshBasicMaterial({color: 0xff151515});  // grey
+        var liftMesh = new THREE.Mesh(liftGeo, material);
+        scene.add(liftMesh);
+    }
+
+    function addWalls() {
+        var shape = new THREE.Shape();
+        shape.moveTo(
+            wall[0][0],
+            -wall[0][1]
+        );
+
+        for (var i = 1; i < wall.length; i++) {
+            shape.lineTo(
+                wall[i][0],
+                -wall[i][1]
+            );
+        }
+
+        shape.lineTo(
+            wall[0][0],
+            -wall[0][1]
+        );
+        var wallGeo = new THREE.ExtrudeGeometry(shape, {depth: 0.1, bevelEnabled: false});
+        var material = new THREE.MeshBasicMaterial({color: 0xff111111});  // grey
+        var wallMesh = new THREE.Mesh(wallGeo, material);
+        scene.add(wallMesh);
+    }
+
     function createRoom(roomData) {
         var shape = new THREE.Shape();
         shape.moveTo(
@@ -134,7 +186,7 @@
         );
 
         var roomGeo = new THREE.ExtrudeGeometry(shape, {depth: 20, bevelEnabled: false});
-        var material = new THREE.MeshBasicMaterial({color: 0x999999});  // grey
+        var material = new THREE.MeshBasicMaterial({color: roomData.color});  // grey
         var room = new THREE.Mesh(roomGeo, material);
         room.callback = selectRoom;
         room.data = roomData;
@@ -171,6 +223,11 @@
     function goFloor(flr) {
         floor = flr;
         document.getElementById("floorSelect").innerHTML = "Floor: " + flr;
+        if(flr == 19) {
+            document.getElementById("reception").innerText = "(green-reception)";
+        } else {
+            document.getElementById("reception").innerText = "(green-olympic sign)";
+        }
         initScene();
         refresh();
     }
@@ -201,154 +258,216 @@
             if (rooms[i].data.name == roomData.name) {
                 rooms[i].material.color.setHex(0xff990000);
             } else {
-                rooms[i].material.color.setHex(0xff999999);
+                rooms[i].material.color.setHex(rooms[i].data.color);
             }
         }
 
         refresh();
     }
 
+    var lifts = [
+        [268,287],
+        [268,677],
+        [540,677],
+        [540,287]
+    ];
+
+    var wall = [
+        [52,0],
+        [774,0],
+        [774,247],
+        [772,247],
+        [772,262],
+        [781,262],
+        //[781,260], window
+        //[790,260], window
+        [790,262],
+        [826,262],
+        [826,545],
+        [772,545],
+        [772,568],
+        [774,568],
+        [774,882],
+        [52,882],
+        [52,568],
+        [54,568],
+        [54,545],
+        [1,545],
+        [1,262],
+        [54,262],
+        [54,238],
+        [52,238]
+    ];
+
     var data = [
         {
             name: "Aphrodite",
             shape: [[552, 395], [608, 395], [608, 445], [552, 445]],
-            floor: 19
+            floor: 19,
+            color: 0x00666666
         },
         {
             name: "Apollo",
             shape: [[611, 395], [659, 395], [659, 425], [639, 445], [611, 445]],
-            floor: 19
+            floor: 19,
+            color: 0x00999999
         },
         {
             name: "Ares",
             shape: [[695, 395], [743, 395], [743, 445], [715, 445], [695, 425]],
-            floor: 19
+            floor: 19,
+            color: 0x00666666
         },
         {
             name: "Artemis",
             shape: [[747, 337], [820, 337], [820, 445], [747, 445]],
-            floor: 19
+            floor: 19,
+            color: 0x00AAAAAA
         },
         {
             name: "Eros",
             shape: [[695, 538], [715, 518], [743, 518], [743, 542], [767, 542], [767, 567], [695, 567]],
-            floor: 19
+            floor: 19,
+            color: 0x00666666
         },
         {
             name: "Hades",
             shape: [[695, 571], [769, 571], [769, 669], [695, 669]],
-            floor: 19
+            floor: 19,
+            color: 0x00999999
         },
         {
             name: "Hebe",
             shape: [[695, 672], [743, 672], [743, 696], [769, 696], [769, 723], [709, 723], [695, 709]],
-            floor: 19
+            floor: 19,
+            color: 0x00666666
         },
         {
             name: "Helios",
             shape: [[617, 672], [659, 672], [659, 710], [646, 723], [617, 723]],
-            floor: 19
+            floor: 19,
+            color: 0x00666666
         },
         {
             name: "Hera",
             shape: [[552, 672], [613, 672], [613, 723], [552, 723]],
-            floor: 19
+            floor: 19,
+            color: 0x00999999
         },
         {
             name: "Heracles",
             shape: [[484, 678], [549, 678], [549, 723], [484, 723]],
-            floor: 19
+            floor: 19,
+            color: 0x00666666
         },
         {
             name: "Hermes",
             shape: [[438, 678], [480, 678], [480, 723], [451, 723], [438, 710]],
-            floor: 19
+            floor: 19,
+            color: 0x00999999
         },
         {
             name: "Iris",
             shape: [[552, 231], [659, 231], [659, 392], [552, 392]],
-            floor: 19
+            floor: 19,
+            color: 0x00AAAAAA
         },
         {
             name: "Morpheus",
             shape: [[695, 240], [743, 240], [743, 289], [695, 289]],
-            floor: 19
+            floor: 19,
+            color: 0x00999999
         },
         {
             name: "Metis",
             shape: [[695, 337], [743, 337], [743, 392], [695, 392]],
-            floor: 19
+            floor: 19,
+            color: 0x00999999
         },
         {
             name: "Nike",
             shape: [[495, 231], [549, 231], [549, 275], [495, 275]],
-            floor: 19
+            floor: 19,
+            color: 0x00666666
         },
         {
             name: "Poseidon",
             shape: [[438, 231], [491, 231], [491, 275], [438, 275]],
-            floor: 19
+            floor: 19,
+            color: 0x00999999
         },
         {
             name: "Selene",
             shape: [[705, 759], [769, 759], [769, 877], [729, 877], [729, 851], [705, 851]],
-            floor: 19
+            floor: 19,
+            color: 0x00999999
         },
         {
             name: "Uranus",
             shape: [[445, 759], [702, 759], [702, 877], [525, 877], [525, 851], [498, 851], [498, 877], [445, 877]],
-            floor: 19
+            floor: 19,
+            color: 0x00666666
         },
 
         {
             name: "Athena",
             shape: [[683, 156], [743, 156], [743, 168], [769, 168], [769, 265], [683, 265]],
-            floor: 20
+            floor: 20,
+            color: 0x00666666
         },
         {
             name: "Phoenix",
             shape: [[683, 269], [743, 269], [743, 318], [683, 318]],
-            floor: 20
+            floor: 20,
+            color: 0x00999999
         },
         {
             name: "Pandora",
             shape: [[552, 279], [608, 279], [608, 323], [552, 323]],
-            floor: 20
+            floor: 20,
+            color: 0x00999999
         },
         {
             name: "Demeter",
             shape: [[552, 327], [608, 327], [608, 372], [552, 372]],
-            floor: 20
+            floor: 20,
+            color: 0x00666666
         },
         {
             name: "Hermione",
             shape: [[552, 375], [608, 375], [608, 412], [552, 412]],
-            floor: 20
+            floor: 20,
+            color: 0x00999999
         },
         {
             name: "Roma",
             shape: [[552, 415], [608, 415], [608, 451], [552, 451]],
-            floor: 20
+            floor: 20,
+            color: 0x00666666
         },
         {
             name: "Odysseus",
             shape: [[646, 542], [646, 619], [769, 619], [769, 542]],
-            floor: 20
+            floor: 20,
+            color: 0x00666666
         },
         {
             name: "Phoebe",
             shape: [[646, 622], [705, 622], [705, 683], [646, 683]],
-            floor: 20
+            floor: 20,
+            color: 0x00999999
         },
         {
             name: "Orion",
             shape: [[709, 622], [769, 622], [769, 712], [709, 712]],
-            floor: 20
+            floor: 20,
+            color: 0x00999999
         },
         {
             name: "Zeus",
             shape: [[671, 716], [769, 716], [769, 781], [671, 781]],
-            floor: 20
+            floor: 20,
+            color: 0x00666666
         }
     ];
 
@@ -359,10 +478,9 @@
         window.addEventListener('resize', resizeCanvas, false);
         window.addEventListener('load', init, false);
 
-        canvas.addEventListener('mousedown', clickRoom, false);
+        //canvas.addEventListener('mousedown', clickRoom, false);
 
         function clickRoom(event) {
-            /*
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
             event.preventDefault();
@@ -377,7 +495,6 @@
             if (intersects.length > 0) {
                 intersects[0].object.callback();
             }
-            */
         }
 
         function resizeCanvas() {
