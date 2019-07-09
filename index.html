@@ -1,89 +1,71 @@
-<html>
+<!doctype html>
+
+<html lang="en">
 <head>
-    <style>* {
-        margin: 0;
-        padding: 0;
-    }
-
-    html, body {
-        width: 100%;
-        height: 100%;
-        font-size: 20px;
-    }
-
-    canvas {
-        display: block;
-        background: #eee;
-    }
-
-    #div1 {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        width: 45%;
-    }
-
-    #div2 {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 45%;
-        text-align: right;
-    }
-
-    #txtRoom, button {
-        font-size:24px;
-        height:150px;
-    }
-
-    #btn19, #btn20 {
-        width:40%;
-        height:150px;
-    }
-
-    </style>
-    <script src="https://threejsfundamentals.org/threejs/resources/threejs/r105/three.min.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script type="text/javascript" src="three.min.js"></script>
 </head>
 <body>
-<div id="div1">
-    <input type="text" id="txtRoom" list="roomList" onchange="lookAtName()"/>
-    <button id="btnReset" onclick="resetSearch()">Reset</button>
-    <datalist id="roomList">
-        <option value="Aphrodite"/>
-        <option value="Apollo"/>
-        <option value="Ares"/>
-        <option value="Artemis"/>
-        <option value="Eros"/>
-        <option value="Hades"/>
-        <option value="Hebe"/>
-        <option value="Helios"/>
-        <option value="Hera"/>
-        <option value="Heracles"/>
-        <option value="Hermes"/>
-        <option value="Iris"/>
-        <option value="Morpheus"/>
-        <option value="Metis"/>
-        <option value="Nike"/>
-        <option value="Poseidon"/>
-        <option value="Selene"/>
-        <option value="Uranus"/>
-        <option value="Athena"/>
-        <option value="Phoenix"/>
-        <option value="Pandora"/>
-        <option value="Demeter"/>
-        <option value="Hermione"/>
-        <option value="Roma"/>
-        <option value="Odysseus"/>
-        <option value="Phoebe"/>
-        <option value="Orion"/>
-        <option value="Zeus"/>
-    </datalist>
+<div style="position:absolute;top:0px;">
+    <canvas id="canvas"></canvas>
 </div>
-<div id="div2">
-    <button id="btn19" onclick="goFloor(19)">19</button>
-    <button id="btn20" onclick="goFloor(20)">20</button>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12"><h1 style="color:white;">Lzd Room Finder</h1></div>
+    </div>
+    <div class="row">
+        <div class="col-9">
+            <select class="form-control" id="slctRoom" onchange="lookAtName()">
+                <option value="">--select room--</option>
+                <option value="Aphrodite">Aphrodite - 19F</option>
+                <option value="Apollo">Apollo - 19F</option>
+                <option value="Ares">Ares - 19F</option>
+                <option value="Athena">Athena - 20F</option>
+                <option value="Artemis">Artemis - 19F</option>
+                <option value="Demeter">Demeter - 20F</option>
+                <option value="Eros">Eros - 19F</option>
+                <option value="Hades">Hades - 19F</option>
+                <option value="Hebe">Hebe - 19F</option>
+                <option value="Helios">Helios - 19F</option>
+                <option value="Hera">Hera - 19F</option>
+                <option value="Heracles">Heracles - 19F</option>
+                <option value="Hermes">Hermes - 19F</option>
+                <option value="Hermione">Hermione - 20F</option>
+                <option value="Iris">Iris - 19F</option>
+                <option value="Morpheus">Morpheus - 19F</option>
+                <option value="Metis">Metis - 19F</option>
+                <option value="Nike">Nike - 19F</option>
+                <option value="Odysseus">Odysseus - 20F</option>
+                <option value="Orion">Orion - 20F</option>
+                <option value="Pandora">Pandora - 20F</option>
+                <option value="Phoebe">Phoebe - 20F</option>
+                <option value="Phoenix">Phoenix - 20F</option>
+                <option value="Poseidon">Poseidon - 19F</option>
+                <option value="Roma">Roma - 20F</option>
+                <option value="Selene">Selene - 19F</option>
+                <option value="Uranus">Uranus - 19F</option>
+                <option value="Zeus">Zeus - 20F</option>
+            </select>
+        </div>
+        <div class="col-3">
+            <button class="btn btn-danger" id="btnReset" onclick="resetSearch()">Reset</button>
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col">
+            <h2 style="color:white;" id="floorSelect">Floor: 20</h2>
+        </div>
+        <div class="col">
+            <button id="btn19" class="btn btn-info" onclick="goFloor(19)">19</button>
+            <button id="btn20" class="btn btn-info" onclick="goFloor(20)">20</button>
+        </div>
+    </div>
 </div>
-<canvas id="canvas"></canvas>
+
 <script>
     'use strict';
     /* global THREE */
@@ -101,8 +83,7 @@
 
     function initScene() {
         scene = new THREE.Scene();
-        var axesHelper = new THREE.AxesHelper(5);
-        scene.add(axesHelper);
+        scene.background = new THREE.Color( 0x000000 );
         data.forEach(function (room) {
             if (room.floor == floor) {
                 var roomObj = createRoom(room);
@@ -110,10 +91,27 @@
                 scene.add(roomObj);
             }
         });
+        addReception();
     }
 
     function refresh() {
         renderer.render(scene, camera);
+    }
+
+    function addReception() {
+        if(floor == 19) {
+            var geometry = new THREE.BoxGeometry(10, 40, 40);
+            var material = new THREE.MeshBasicMaterial({color: 0xff00ff00});
+            var cube = new THREE.Mesh(geometry, material);
+            cube.position.set(680, -470, 0);
+            scene.add(cube);
+        } else {
+            var geometry = new THREE.BoxGeometry(10, 120, 40);
+            var material = new THREE.MeshBasicMaterial({color: 0xff00ff00});
+            var cube = new THREE.Mesh(geometry, material);
+            cube.position.set(680, -400, 0);
+            scene.add(cube);
+        }
     }
 
     function createRoom(roomData) {
@@ -135,7 +133,7 @@
             -roomData.shape[0][1]
         );
 
-        var roomGeo = new THREE.ExtrudeGeometry(shape, {amount: 20, bevelEnabled: false});
+        var roomGeo = new THREE.ExtrudeGeometry(shape, {depth: 20, bevelEnabled: false});
         var material = new THREE.MeshBasicMaterial({color: 0x999999});  // grey
         var room = new THREE.Mesh(roomGeo, material);
         room.callback = selectRoom;
@@ -157,9 +155,9 @@
     }
 
     function lookAtName() {
-        var name = document.getElementById("txtRoom").value;
+        var name = document.getElementById("slctRoom").value;
         var roomFloor = getFloor(name);
-        if(floor != roomFloor) {
+        if (floor != roomFloor) {
             goFloor(roomFloor);
         }
         for (var i = 0; i < rooms.length; i++) {
@@ -172,12 +170,14 @@
 
     function goFloor(flr) {
         floor = flr;
+        document.getElementById("floorSelect").innerHTML = "Floor: " + flr;
         initScene();
         refresh();
     }
 
     function resetSearch() {
-        document.getElementById("txtRoom").value = '';
+        document.getElementById("slctRoom").value = '';
+
         initCamera();
         initScene();
         renderer.render(scene, camera);
@@ -197,7 +197,7 @@
             camera.lookAt(roomData.shape[0][0], -roomData.shape[0][1], 0);
         }
 
-        for (var i = 0; i< rooms.length; i++) {
+        for (var i = 0; i < rooms.length; i++) {
             if (rooms[i].data.name == roomData.name) {
                 rooms[i].material.color.setHex(0xff990000);
             } else {
@@ -352,17 +352,17 @@
         }
     ];
 
-</script>
-<script>
     (function () {
 
         var canvas = document.getElementById('canvas');
         // resize the canvas to fill browser window dynamically
         window.addEventListener('resize', resizeCanvas, false);
         window.addEventListener('load', init, false);
-        window.addEventListener('mousedown', clickRoom, false);
+
+        canvas.addEventListener('mousedown', clickRoom, false);
 
         function clickRoom(event) {
+            /*
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
             event.preventDefault();
@@ -377,6 +377,7 @@
             if (intersects.length > 0) {
                 intersects[0].object.callback();
             }
+            */
         }
 
         function resizeCanvas() {
