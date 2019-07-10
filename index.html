@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="bootstrap.min.css">
     <script type="text/javascript" src="three.min.js"></script>
+    <script type="text/javascript" src="OrbitControls.js"></script>
     <script type="text/javascript" src="rooms.js"></script>
 </head>
 <body>
@@ -74,16 +75,30 @@
 <script>
     'use strict';
     /* global THREE */
-    var camera, scene, renderer;
+    var camera, scene, renderer, controls;
     var rooms = [];
     var floor = 20;
 
     function initCamera() {
         camera = new THREE.PerspectiveCamera(75, 1, 0.1, 2000);
         camera.rotation.set(0, Math.PI/8, Math.PI / 2);
+        camera.up = new THREE.Vector3(0, 0, 1);
         camera.position.z = 550;
         camera.position.x = 800;
         camera.position.y = -470;
+
+    }
+
+    function initControls() {
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.maxPolarAngle = Math.PI * 0.4;
+        controls.minPolarAngle = Math.PI * 0.2;
+        controls.enableZoom = true;
+        controls.enablePan = false;
+        controls.minDistance = 500;
+        controls.maxDistance = 1000;
+        controls.target = new THREE.Vector3(500, -500, 0);
+        controls.update();
     }
 
     function initScene() {
@@ -98,6 +113,8 @@
             }
         });
         addReception();
+        addTables();
+        addStairs();
         addEntrance();
         addLifts();
         addWalls();
@@ -116,15 +133,12 @@
         return new THREE.Mesh(geo, material);
     }
 
-    function refresh() {
-        renderer.render(scene, camera);
-    }
-
     function addReception() {
         if(floor == 19) {
-            var geometry = new THREE.BoxGeometry(10, 40, 40);
+            var geometry = new THREE.BoxGeometry(20, 40, 5);
             var material = new THREE.MeshBasicMaterial({color: 0xff00ff00});
             var cube = new THREE.Mesh(geometry, material);
+
             cube.position.set(680, -470, 0);
             scene.add(cube);
         } else {
@@ -157,13 +171,29 @@
         }
     }
 
+    function addTables() {
+        if(floor == 20) {
+            scene.add(getTable(550, 787,Math.PI/2));
+            scene.add(getTable(500, 787,Math.PI/2));
+            scene.add(getTable(450, 787,Math.PI/2));
+            scene.add(getTable(400, 787,Math.PI/2));
+            scene.add(getTable(350, 787,Math.PI/2));
+            scene.add(getTable(300, 787,Math.PI/2));
+
+            scene.add(getTable(150, 830,0));
+            scene.add(getTable(150, 790,0));
+            scene.add(getTable(150, 750,0));
+            scene.add(getTable(150, 710,0));
+        }
+    }
+
     function addEntrance() {
         var entranceMesh = getMesh(entrance, 2, 0xfff9f9f9);
         scene.add(entranceMesh);
     }
 
     function addLifts() {
-        var liftMesh = getMesh(lifts, 10, 0xff151515);
+        var liftMesh = getMesh(lifts, 50, 0xff151515);
         scene.add(liftMesh);
     }
 
@@ -172,16 +202,38 @@
         scene.add(wallsMesh);
     }
 
+    function getTable(x,y,rotate) {
+        var geometry = new THREE.BoxGeometry(120, 20, 10);
+        var material = new THREE.MeshBasicMaterial({color: 0x333333});
+        var table = new THREE.Mesh(geometry, material);
+        table.position.set(x,-y,0);
+        table.rotation.set(0,0,rotate);
+        return table;
+    }
+
+    function addStairs() {
+        if(floor == 20) {
+            var stairlimited = [
+                [552, 541],
+                [611, 541],
+                [611, 621],
+                [609, 621],
+                [609, 542],
+                [552, 542]
+            ];
+            scene.add(getMesh(stairlimited, 10, 0x000099));
+        }
+    }
+
     function createRoom(roomData) {
-        var room = getMesh(roomData.shape, 20, roomData.color);
-        room.callback = selectRoom;
+        var room = getMesh(roomData.shape, 30, roomData.color);
+        room.callback = clickRoom;
         room.data = roomData;
         return room;
     }
 
-    function selectRoom() {
-        lookAtRoom(this.data);
-        refresh();
+    function clickRoom() {
+        console.log(this.data);
     }
 
     function getFloor(name) {
@@ -215,20 +267,16 @@
             document.getElementById("reception").innerText = "";
         }
         initScene();
-        refresh();
     }
 
     function resetSearch() {
         document.getElementById("slctRoom").value = '';
-
         initCamera();
+        initControls();
         initScene();
-        renderer.render(scene, camera);
     }
 
     function lookAtRoom(roomData) {
-        camera.position.set(1000, -500, 300);
-        camera.up = new THREE.Vector3(0, 0, 1);
         if (roomData.lookFrom != null) {
             camera.position.x = roomData.lookFrom[0];
             camera.position.y = -roomData.lookFrom[1];
@@ -236,19 +284,21 @@
         }
         if (roomData.lookAt != null) {
             camera.lookAt(roomData.lookAt[0], -roomData.lookAt[1], 0);
+            controls.target = new THREE.Vector3(roomData.lookAt[0], -roomData.lookAt[1], 0);
         } else {
             camera.lookAt(roomData.shape[0][0], -roomData.shape[0][1], 0);
+            controls.target = new THREE.Vector3(roomData.shape[0][0], -roomData.shape[0][1], 0);
         }
 
         for (var i = 0; i < rooms.length; i++) {
             if (rooms[i].data.name == roomData.name) {
-                rooms[i].material.color.setHex(0xff990000);
+                rooms[i].scale.set(1,1,2);
+                rooms[i].material.color.setHex(0xffaa0000);
             } else {
+                rooms[i].scale.set(1,1,0.5);
                 rooms[i].material.color.setHex(rooms[i].data.color);
             }
         }
-
-        refresh();
     }
 
     var entrance = [
@@ -300,8 +350,7 @@
         // resize the canvas to fill browser window dynamically
         window.addEventListener('resize', resizeCanvas, false);
         window.addEventListener('load', init, false);
-
-        //canvas.addEventListener('mousedown', clickRoom, false);
+        canvas.addEventListener('mousedown', clickRoom, false);
 
         function clickRoom(event) {
             var raycaster = new THREE.Raycaster();
@@ -328,13 +377,24 @@
 
         resizeCanvas();
 
-        function init() {
-            renderer = new THREE.WebGLRenderer({canvas});
-            initCamera();
-            initScene();
+        function animate() {
+            requestAnimationFrame( animate );
             renderer.render(scene, camera);
         }
+
+        function initStep() {
+            initCamera();
+            initControls();
+            initScene();
+        }
+
+        function init() {
+            renderer = new THREE.WebGLRenderer({canvas});
+            initStep();
+            animate();
+        }
     })();
+
 </script>
 </body>
 </html>
