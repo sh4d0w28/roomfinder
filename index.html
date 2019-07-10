@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="bootstrap.min.css">
     <script type="text/javascript" src="three.min.js"></script>
+    <script type="text/javascript" src="OrbitControls.js"></script>
     <script type="text/javascript" src="rooms.js"></script>
 </head>
 <body>
@@ -74,7 +75,7 @@
 <script>
     'use strict';
     /* global THREE */
-    var camera, scene, renderer;
+    var camera, scene, renderer, controls;
     var rooms = [];
     var floor = 20;
 
@@ -84,6 +85,17 @@
         camera.position.z = 550;
         camera.position.x = 800;
         camera.position.y = -470;
+        camera.up = new THREE.Vector3(0, 0, 1);
+    }
+
+    function initControls() {
+        // controls
+        controls = new THREE.OrbitControls( camera, renderer.domElement );
+        controls.maxPolarAngle = Math.PI * 0.5;
+        controls.minDistance = 500;
+        controls.maxDistance = 5000;
+        controls.target = new THREE.Vector3(0, -470, -800);
+        controls.update();
     }
 
     function initScene() {
@@ -101,6 +113,11 @@
         addEntrance();
         addLifts();
         addWalls();
+    }
+
+    function animate() {
+        requestAnimationFrame( animate );
+        refresh();
     }
 
     function getMesh(points, height, color) {
@@ -181,7 +198,6 @@
 
     function selectRoom() {
         lookAtRoom(this.data);
-        refresh();
     }
 
     function getFloor(name) {
@@ -215,18 +231,20 @@
             document.getElementById("reception").innerText = "";
         }
         initScene();
-        refresh();
     }
 
     function resetSearch() {
         document.getElementById("slctRoom").value = '';
 
         initCamera();
+        initControls();
         initScene();
+
         renderer.render(scene, camera);
     }
 
     function lookAtRoom(roomData) {
+        console.log('roomData', roomData.shape[0]);
         camera.position.set(1000, -500, 300);
         camera.up = new THREE.Vector3(0, 0, 1);
         if (roomData.lookFrom != null) {
@@ -248,7 +266,12 @@
             }
         }
 
-        refresh();
+        if (controls) {
+            // if use OrbitControls, then fix the rotation target to the room
+            controls.target = new THREE.Vector3(roomData.shape[0][0], -roomData.shape[0][1], 0);
+            controls.update();
+        }
+
     }
 
     var entrance = [
@@ -331,8 +354,9 @@
         function init() {
             renderer = new THREE.WebGLRenderer({canvas});
             initCamera();
+            initControls();
             initScene();
-            renderer.render(scene, camera);
+            animate();
         }
     })();
 </script>
