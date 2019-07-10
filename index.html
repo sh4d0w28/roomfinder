@@ -4,9 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/106/three.min.js"></script>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <script type="text/javascript" src="three.min.js"></script>
     <script type="text/javascript" src="rooms.js"></script>
 </head>
 <body>
@@ -104,6 +103,19 @@
         addWalls();
     }
 
+    function getMesh(points, height, color) {
+        var shape = new THREE.Shape();
+        shape.moveTo(points[0][0],-points[0][1]);
+        for (var i = 1; i < points.length; i++) {
+            shape.lineTo(points[i][0],-points[i][1]);
+        }
+        shape.lineTo(points[0][0],-points[0][1]);
+
+        var geo = new THREE.ExtrudeGeometry(shape, {depth: height, bevelEnabled: false});
+        var material = new THREE.MeshBasicMaterial({color: color});  // grey
+        return new THREE.Mesh(geo, material);
+    }
+
     function refresh() {
         renderer.render(scene, camera);
     }
@@ -146,99 +158,22 @@
     }
 
     function addEntrance() {
-        var shape = new THREE.Shape();
-        shape.moveTo(
-            entrance[0][0],
-            -entrance[0][1]
-        );
-
-        for (var i = 1; i < entrance.length; i++) {
-            shape.lineTo(
-                entrance[i][0],
-                -entrance[i][1]
-            );
-        }
-
-        shape.lineTo(
-            entrance[0][0],
-            -entrance[0][1]
-        );
-        var entranceGeo = new THREE.ExtrudeGeometry(shape, {depth: 2, bevelEnabled: false});
-        var material = new THREE.MeshBasicMaterial({color: 0xfff9f9f9});  // grey
-        var entranceMesh = new THREE.Mesh(entranceGeo, material);
+        var entranceMesh = getMesh(entrance, 2, 0xfff9f9f9);
         scene.add(entranceMesh);
     }
 
     function addLifts() {
-        var shape = new THREE.Shape();
-        shape.moveTo(
-            lifts[0][0],
-            -lifts[0][1]
-        );
-
-        for (var i = 1; i < lifts.length; i++) {
-            shape.lineTo(
-                lifts[i][0],
-                -lifts[i][1]
-            );
-        }
-
-        shape.lineTo(
-            lifts[0][0],
-            -lifts[0][1]
-        );
-        var liftGeo = new THREE.ExtrudeGeometry(shape, {depth: 10, bevelEnabled: false});
-        var material = new THREE.MeshBasicMaterial({color: 0xff151515});  // grey
-        var liftMesh = new THREE.Mesh(liftGeo, material);
+        var liftMesh = getMesh(lifts, 10, 0xff151515);
         scene.add(liftMesh);
     }
 
     function addWalls() {
-        var shape = new THREE.Shape();
-        shape.moveTo(
-            wall[0][0],
-            -wall[0][1]
-        );
-
-        for (var i = 1; i < wall.length; i++) {
-            shape.lineTo(
-                wall[i][0],
-                -wall[i][1]
-            );
-        }
-
-        shape.lineTo(
-            wall[0][0],
-            -wall[0][1]
-        );
-        var wallGeo = new THREE.ExtrudeGeometry(shape, {depth: 0.1, bevelEnabled: false});
-        var material = new THREE.MeshBasicMaterial({color: 0xff111111});  // grey
-        var wallMesh = new THREE.Mesh(wallGeo, material);
-        scene.add(wallMesh);
+        var wallsMesh = getMesh(walls, 0.1, 0xff111111);
+        scene.add(wallsMesh);
     }
 
     function createRoom(roomData) {
-        var shape = new THREE.Shape();
-        shape.moveTo(
-            roomData.shape[0][0],
-            -roomData.shape[0][1]
-        );
-
-        for (var i = 1; i < roomData.shape.length; i++) {
-            shape.lineTo(
-                roomData.shape[i][0],
-                -roomData.shape[i][1]
-            );
-        }
-
-        shape.lineTo(
-            roomData.shape[0][0],
-            -roomData.shape[0][1]
-        );
-
-        var roomGeo = new THREE.ExtrudeGeometry(shape, {depth: 20, bevelEnabled: false});
-        var material = new THREE.MeshBasicMaterial({color: roomData.color});  // grey
-        var room = new THREE.Mesh(roomGeo, material);
+        var room = getMesh(roomData.shape, 20, roomData.color);
         room.callback = selectRoom;
         room.data = roomData;
         return room;
@@ -334,15 +269,13 @@
         [540,287]
     ];
 
-    var wall = [
+    var walls = [
         [52,0],
         [774,0],
         [774,247],
         [772,247],
         [772,262],
         [781,262],
-        //[781,260], window
-        //[790,260], window
         [790,262],
         [826,262],
         [826,545],
