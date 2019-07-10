@@ -99,6 +99,7 @@
             }
         });
         addReception();
+        addEntrance();
         addLifts();
         addWalls();
     }
@@ -116,11 +117,11 @@
             scene.add(cube);
         } else {
             var geometry = new THREE.RingGeometry( 8, 13, 32 );
-            var yellowMat = new THREE.MeshBasicMaterial( { color: 0xffff00, side: THREE.DoubleSide } );
-            var blueMat = new THREE.MeshBasicMaterial( { color: 0x0000ff, side: THREE.DoubleSide } );
+            var yellowMat = new THREE.MeshBasicMaterial( { color: 0xf9f900, side: THREE.DoubleSide } );
+            var blueMat = new THREE.MeshBasicMaterial( { color: 0x0000f9, side: THREE.DoubleSide } );
             var greyMat = new THREE.MeshBasicMaterial( { color: 0xaaaaaa, side: THREE.DoubleSide } );
-            var greenMat = new THREE.MeshBasicMaterial( { color: 0x00ff00, side: THREE.DoubleSide } );
-            var redMat = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
+            var greenMat = new THREE.MeshBasicMaterial( { color: 0x00f900, side: THREE.DoubleSide } );
+            var redMat = new THREE.MeshBasicMaterial( { color: 0xf90000, side: THREE.DoubleSide } );
 
             var r1 = new THREE.Mesh( geometry, blueMat );
             r1.position.set(680,-400,20);
@@ -141,14 +142,31 @@
             var r5 = new THREE.Mesh( geometry, redMat );
             r5.position.set(680,-348,20);
             scene.add( r5 );
-/*
-            var geometry = new THREE.BoxGeometry(10, 120, 40);
-            var material = new THREE.MeshBasicMaterial({color: 0xff00ff00});
-            var cube = new THREE.Mesh(geometry, material);
-            cube.position.set(680, -400, 0);
-            scene.add(cube);
-*/
         }
+    }
+
+    function addEntrance() {
+        var shape = new THREE.Shape();
+        shape.moveTo(
+            entrance[0][0],
+            -entrance[0][1]
+        );
+
+        for (var i = 1; i < entrance.length; i++) {
+            shape.lineTo(
+                entrance[i][0],
+                -entrance[i][1]
+            );
+        }
+
+        shape.lineTo(
+            entrance[0][0],
+            -entrance[0][1]
+        );
+        var entranceGeo = new THREE.ExtrudeGeometry(shape, {depth: 2, bevelEnabled: false});
+        var material = new THREE.MeshBasicMaterial({color: 0xfff9f9f9});  // grey
+        var entranceMesh = new THREE.Mesh(entranceGeo, material);
+        scene.add(entranceMesh);
     }
 
     function addLifts() {
@@ -297,6 +315,17 @@
 
         refresh();
     }
+
+    var entrance = [
+        [568,476],
+        [588,476],
+        [588,470],
+        [599,481],
+        [599,482],
+        [588,493],
+        [588,487],
+        [568,487]
+    ];
 
     var lifts = [
         [268,287],
